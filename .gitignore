@@ -1,0 +1,43 @@
+# Editor and user-local files
+.vscode/
+.idea/
+*.uvguix.*
+*.uvoptx
+*.user
+*.suo
+*.tmp
+*.bak
+~$*
+
+# Keil generated output
+**/MDK-ARM/1_template_led/
+Objects/
+Listings/
+*.axf
+*.bin
+*.hex
+*.elf
+*.map
+*.lst
+*.o
+*.d
+*.crf
+*.dep
+
+# PX4 generated output and local state
+build/
+.cache/
+logs/
+*.ulg
+
+# Archives and document render intermediates
+*.7z
+*.zip
+*.rar
+docx_render*/
+
+# Credentials and local environment
+.env
+.env.*
+*.pem
+*.key
