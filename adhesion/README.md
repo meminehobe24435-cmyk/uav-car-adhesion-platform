@@ -47,4 +47,3 @@ make micoair_h743-v2_default
 ## 当前证据边界
 
 原目录中存在 `px4_sitl_default` 和 `micoair_h743-v2_default` 的 CMake 配置目录，SITL 模块列表包含两个自定义模块；但本次整理没有找到最终 `px4` 可执行文件、`.px4` 固件或完整的通过日志。因此当前状态应表述为“源码与构建配置已集成，编译和飞行验证待复核”。
-
