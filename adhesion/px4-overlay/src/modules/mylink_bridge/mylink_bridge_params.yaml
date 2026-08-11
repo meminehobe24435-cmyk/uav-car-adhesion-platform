@@ -1,0 +1,30 @@
+module_name: mylink_bridge
+parameters:
+- group: MyLink Bridge
+  definitions:
+    MLB_ENABLE:
+      description:
+        short: Enable MyLink bridge
+        long: >-
+          Set to 1 to enable the MyLink bridge module.
+          When disabled, no serial commands are processed.
+      type: int32
+      default: 0
+      min: 0
+      max: 1
+    MLB_PORT:
+      description:
+        short: Serial port for MyLink
+        long: >-
+          Serial port device path for MyLink communication.
+      type: string
+      default: "/dev/ttyS3"
+    MLB_BAUDRATE:
+      description:
+        short: Serial baud rate
+        long: >-
+          Baud rate for the MyLink serial port.
+      type: int32
+      default: 115200
+      min: 9600
+      max: 921600

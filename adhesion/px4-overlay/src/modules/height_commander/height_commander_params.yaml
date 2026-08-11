@@ -1,0 +1,37 @@
+module_name: height_commander
+parameters:
+- group: Height Commander
+  definitions:
+    HC_DELTA:
+      description:
+        short: Height change delta
+        long: >-
+          Altitude change in meters triggered by the aux switch.
+          Rising edge ascends by HC_DELTA, falling edge descends back.
+      type: float
+      default: 5.0
+      min: 0.5
+      max: 50.0
+      decimal: 1
+      increment: 0.5
+      unit: m
+    HC_ENABLE:
+      description:
+        short: Enable height commander
+        long: >-
+          Set to 1 to enable the height commander functionality.
+          Set to 0 to disable it entirely.
+      type: int32
+      default: 0
+      min: 0
+      max: 1
+    HC_CHANNEL:
+      description:
+        short: RC channel for height command
+        long: >-
+          The physical RC channel number used for the height command switch.
+          Should match RC_MAP_AUX2 (or whichever AUX you assign).
+      type: int32
+      default: 7
+      min: 5
+      max: 11

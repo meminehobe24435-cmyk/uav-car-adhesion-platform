@@ -1,0 +1,5 @@
+menuconfig MODULES_HEIGHT_COMMANDER
+	bool "height_commander"
+	default n
+	---help---
+		Enable support for HeightCommander module.

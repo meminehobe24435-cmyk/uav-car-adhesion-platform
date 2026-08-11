@@ -1,0 +1,5 @@
+menuconfig MODULES_MYLINK_BRIDGE
+	bool "mylink_bridge"
+	default n
+	---help---
+		Enable support for MyLink bridge module.
