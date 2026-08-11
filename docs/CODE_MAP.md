@@ -32,4 +32,3 @@
 | `boards/px4/fmu-v6x/default.px4board` | 为 FMU-v6x 编入 `mylink_bridge` |
 
 PX4 部分是覆盖层，不包含完整上游。使用时必须先准备 `SOURCE_MANIFEST.md` 指定的基线。
-

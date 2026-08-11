@@ -47,4 +47,3 @@
 ## 许可边界
 
 本仓库没有为整合项目擅自新增统一开源许可证。STM32 HAL、FreeRTOS、PX4 覆盖文件及其他第三方组件继续受各自文件头或原项目许可证约束。来源和基线见 [SOURCE_MANIFEST.md](docs/SOURCE_MANIFEST.md)。
-
