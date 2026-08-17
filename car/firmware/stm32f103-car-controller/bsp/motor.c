@@ -5,11 +5,13 @@
 
 #include "math.h"
 
-#define MOTOR_FIRST_LIMIT_PERCENT  30U
+#define MOTOR_FIRST_LIMIT_PERCENT  80U
 #define MOTOR_FIRST_TEST_PERCENT   20U
-#define MOTOR_TEST_RUN_MS        2000U
-#define MOTOR_TEST_STOP_MS       2000U
-#define MOTOR_TEST_FINAL_STOP_MS 3000U
+#define MOTOR_TEST_RUN_MS              2000U
+#define MOTOR_TEST_INITIAL_STOP_MS     2000U
+#define MOTOR_TEST_DIRECTION_STOP_MS   1000U
+#define MOTOR_TEST_BETWEEN_MOTORS_MS   2000U
+#define MOTOR_TEST_LOOP_END_MS         3000U
 
 typedef struct
 {
@@ -22,15 +24,15 @@ typedef struct
 
 /*
  * Central motor calibration table.
- * pwm_max=30 is 30% because TIM2 ARR=99 gives 100 counts per PWM period.
+ * pwm_max=80 is 80% because TIM2 ARR=99 gives 100 counts per PWM period.
  * Change only direction after physical forward direction is observed.
  */
 MotorConfig motor_config[MOTOR_COUNT] =
 {
-  {1, 30U}, /* MOTOR_1: J1 / TB6612_1 channel A / TIM2_CH1 */
-  {1, 30U}, /* MOTOR_2: J2 / TB6612_1 channel B / TIM2_CH2 */
-  {1, 30U}, /* MOTOR_3: J3 / TB6612_2 channel A / TIM2_CH4 */
-  {1, 30U}  /* MOTOR_4: J4 / TB6612_2 channel B / TIM2_CH3 */
+  {1, 80U}, /* MOTOR_1: J1 / TB6612_1 channel A / TIM2_CH1 */
+  {1, 80U}, /* MOTOR_2: J2 / TB6612_1 channel B / TIM2_CH2 */
+  {1, 80U}, /* MOTOR_3: J3 / TB6612_2 channel A / TIM2_CH4 */
+  {-1, 80U} /* MOTOR_4: J4 / PA0 wheel; reversed for vehicle-forward */
 };
 
 static const MotorHardware motor_hardware[MOTOR_COUNT] =
@@ -98,17 +100,22 @@ static int16_t motor_unsigned_to_signed(uint16_t pwm)
   return (int16_t)pwm;
 }
 
-static void motor_four_test_one(MotorId id, uint16_t pwm)
+static void motor_four_test_one(MotorId id,
+                                uint16_t pwm,
+                                uint32_t final_stop_ms)
 {
+  /* Reassert that every non-selected motor is stopped before each step. */
+  motor_stop_all();
+
   motor_forward(id, pwm);
   HAL_Delay(MOTOR_TEST_RUN_MS);
   motor_stop_all();
-  HAL_Delay(MOTOR_TEST_STOP_MS);
+  HAL_Delay(MOTOR_TEST_DIRECTION_STOP_MS);
 
   motor_reverse(id, pwm);
   HAL_Delay(MOTOR_TEST_RUN_MS);
   motor_stop_all();
-  HAL_Delay(MOTOR_TEST_STOP_MS);
+  HAL_Delay(final_stop_ms);
 }
 
 uint16_t motor_get_pwm_full_scale(void)
@@ -158,7 +165,7 @@ void motor_init(void)
   motor_check_hal_status(HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3));
   motor_check_hal_status(HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4));
 
-  /* Enforce the first-test 30% ceiling even if a config value is too large. */
+  /* Enforce the configured 80% ceiling even if a table value is too large. */
   first_limit = motor_percent_to_pwm(MOTOR_FIRST_LIMIT_PERCENT);
   for (index = 0U; index < (uint32_t)MOTOR_COUNT; index++)
   {
@@ -247,19 +254,19 @@ void motor_single_test(void)
   while (1)
   {
     motor_stop_all();
-    HAL_Delay(MOTOR_TEST_STOP_MS);
+    HAL_Delay(MOTOR_TEST_INITIAL_STOP_MS);
 
     motor_forward(MOTOR_1, test_pwm);
     HAL_Delay(MOTOR_TEST_RUN_MS);
 
     motor_stop_all();
-    HAL_Delay(MOTOR_TEST_STOP_MS);
+    HAL_Delay(MOTOR_TEST_BETWEEN_MOTORS_MS);
 
     motor_reverse(MOTOR_1, test_pwm);
     HAL_Delay(MOTOR_TEST_RUN_MS);
 
     motor_stop_all();
-    HAL_Delay(MOTOR_TEST_FINAL_STOP_MS);
+    HAL_Delay(MOTOR_TEST_LOOP_END_MS);
   }
 }
 
@@ -270,33 +277,13 @@ void motor_four_test(void)
   while (1)
   {
     motor_stop_all();
-    HAL_Delay(MOTOR_TEST_STOP_MS);
+    HAL_Delay(MOTOR_TEST_INITIAL_STOP_MS);
 
-    motor_four_test_one(MOTOR_1, test_pwm);
-    motor_four_test_one(MOTOR_2, test_pwm);
-    motor_four_test_one(MOTOR_3, test_pwm);
-    motor_four_test_one(MOTOR_4, test_pwm);
+    motor_four_test_one(MOTOR_1, test_pwm, MOTOR_TEST_BETWEEN_MOTORS_MS);
+    motor_four_test_one(MOTOR_2, test_pwm, MOTOR_TEST_BETWEEN_MOTORS_MS);
+    motor_four_test_one(MOTOR_3, test_pwm, MOTOR_TEST_BETWEEN_MOTORS_MS);
+    motor_four_test_one(MOTOR_4, test_pwm, MOTOR_TEST_LOOP_END_MS);
   }
-}
-
-void car_stop(void)
-{
-  motor_stop_all();
-}
-
-void car_forward(uint16_t pwm)
-{
-  int16_t command = motor_unsigned_to_signed(pwm);
-  motor_set_all(command, command, command, command);
-}
-
-void car_backward(uint16_t pwm)
-{
-  int16_t command = motor_unsigned_to_signed(pwm);
-  motor_set_all((int16_t)-command,
-                (int16_t)-command,
-                (int16_t)-command,
-                (int16_t)-command);
 }
 
 void motor_ctrol(Chassis_TypeDef *chassis)

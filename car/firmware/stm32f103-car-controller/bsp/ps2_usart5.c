@@ -1,4 +1,4 @@
-//¼òµ¥ÖĞ¶Ï½ÓÊÕ ºóĞø¿ÉÀ©Õ¹dma+¿ÕÏĞÖĞ¶Ï
+//ç®€å•ä¸­æ–­æ¥æ”¶ åç»­å¯æ‰©å±•dma+ç©ºé—²ä¸­æ–­
 #include "ps2_usart.h"
 #include "usart.h"
 #include "stm32f1xx_hal.h"
@@ -10,16 +10,16 @@
 uint8_t rx_data;
 uint8_t uart5_rx_buf[RX_BUF_SIZE];
 uint16_t uart5_rx_cnt = 0;
-uint8_t uart5_rx_finish = 0;  // ½ÓÊÕÍê³É±êÖ¾£¨ºËĞÄ£¡£©
+volatile uint8_t uart5_rx_finish = 0;  // æ¥æ”¶å®Œæˆæ ‡å¿—ï¼ˆæ ¸å¿ƒï¼ï¼‰
 
-PS2_HandleTypeDef ps2 = {0};  //Êı¾İ´æ´¢½á¹¹Ìå
+PS2_HandleTypeDef ps2 = {0};  //æ•°æ®å­˜å‚¨ç»“æ„ä½“
 extern Chassis_TypeDef chassis; 
-uint8_t remote_stopped_flag = 0;          // Í£Ö¹±êÖ¾£¨1=Ò£¿ØÆ÷ÎŞÓĞĞ§ÊäÈë³¬¹ı100ms£©
-static uint32_t last_nonzero_tick = 0;    // ×îºóÒ»´ÎÊÕµ½·ÇÁãÊı¾İµÄÏµÍ³½ÚÅÄ
+uint8_t remote_stopped_flag = 0;          // åœæ­¢æ ‡å¿—ï¼ˆ1=é¥æ§å™¨æ— æœ‰æ•ˆè¾“å…¥è¶…è¿‡100msï¼‰
+static uint32_t last_nonzero_tick = 0;    // æœ€åä¸€æ¬¡æ”¶åˆ°éé›¶æ•°æ®çš„ç³»ç»ŸèŠ‚æ‹
 /**
-  * º¯    Êı£º´®¿Ú³õÊ¼»¯
-  * ²Î    Êı£ºÎŞ
-  * ·µ »Ø Öµ£ºÎŞ
+  * å‡½    æ•°ï¼šä¸²å£åˆå§‹åŒ–
+  * å‚    æ•°ï¼šæ— 
+  * è¿” å› å€¼ï¼šæ— 
   */
 void uasrt_rx_init(void)
 {
@@ -32,42 +32,42 @@ void Uart5_SendByte(uint8_t Byte)
 }
 
 /**
-  * º¯    Êı£º´®¿ÚÖĞ¶Ï»Øµ÷º¯Êı
-  * ²Î    Êı£ºÎŞ
-  * ·µ »Ø Öµ£ºÎŞ
+  * å‡½    æ•°ï¼šä¸²å£ä¸­æ–­å›è°ƒå‡½æ•°
+  * å‚    æ•°ï¼šæ— 
+  * è¿” å› å€¼ï¼šæ— 
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if(huart->Instance == UART5)
     {
-        // ½ö´æÊı¾İ
+        // ä»…å­˜æ•°æ®
         if(uart5_rx_cnt < RX_BUF_SIZE-1)
         {
             uart5_rx_buf[uart5_rx_cnt++] = rx_data;
         }
 
-        // Ò»Ö¡½ÓÊÕÍê³É
+        // ä¸€å¸§æ¥æ”¶å®Œæˆ
         if(rx_data == '\n' || uart5_rx_cnt >= 64)
         {
             uart5_rx_buf[uart5_rx_cnt] = '\0';
-            uart5_rx_finish = 1;  // ±ê¼ÇÍê³É
+            uart5_rx_finish = 1;  // æ ‡è®°å®Œæˆ
             uart5_rx_cnt = 0;
         }
 
-        // ÖØĞÂ¿ªÆô½ÓÊÕ
+        // é‡æ–°å¼€å¯æ¥æ”¶
         HAL_UART_Receive_IT(&huart5, &rx_data, 1);
     }
 }
 
 #define PS2_MAP     128
-// Ô­Ê¼Öµ x (0-255) ¡ú Ó³Éä³É -128-128
+// åŸå§‹å€¼ x (0-255) â†’ æ˜ å°„æˆ -128-128
 int map_joystick(int x)
 {
     float val = (x - 128); 
                             
     return (int)val;
 }
-//ËÀÇøÏŞ·ù
+//æ­»åŒºé™å¹…
 int joystick_deadzone(int val)
 {
     if (abs_int(val) < 5)
@@ -75,9 +75,9 @@ int joystick_deadzone(int val)
     return val;
 }
 /**
-  * º¯    Êı£ºÒ£¿ØÆ÷Êı¾İ½âÎö
-  * ²Î    Êı£ºÎŞ
-  * ·µ »Ø Öµ£ºÎŞ
+  * å‡½    æ•°ï¼šé¥æ§å™¨æ•°æ®è§£æ
+  * å‚    æ•°ï¼šæ— 
+  * è¿” å› å€¼ï¼šæ— 
   */
 uint8_t data_flag = 0;
 void ps2_parse_data(uint8_t *str)
@@ -87,14 +87,15 @@ void ps2_parse_data(uint8_t *str)
     int res = sscanf((char*)str, "HUB0_Joystick data: x%02X x%02X x%02X x%02X x%02X x%02X x%02X x%02X",
                     &x1,&x2, &x3, &x4, &x5,&x6,&x7,&x8);
 
-    // Ö»ÓĞ½âÎö³É¹¦8¸öÊı¾İ£¬²Å¸üĞÂ½á¹¹Ìå
+    // åªæœ‰è§£ææˆåŠŸ8ä¸ªæ•°æ®ï¼Œæ‰æ›´æ–°ç»“æ„ä½“
     if(res == 8)
     {
-        // 1. Ìî³äÔ­Ê¼Ó²¼şÊı¾İµ½½á¹¹Ìå
+        // 1. å¡«å……åŸå§‹ç¡¬ä»¶æ•°æ®åˆ°ç»“æ„ä½“
         ps2.frame_id = x1;
-				//Ó³Éä+ËÀÇø´¦Àí
+				//æ˜ å°„+æ­»åŒºå¤„ç†
 			  ps2.lx = joystick_deadzone(map_joystick(x4));
         ps2.ly = joystick_deadzone(map_joystick(x5));
+        ps2.buttons = (uint8_t)x7;
 
         ps2.left_key = 0; 
 //			  ps2.right_key = 0; 
@@ -109,7 +110,7 @@ void ps2_parse_data(uint8_t *str)
                     ps2.left_key = 2;
                     break;
                 default:
-                    // ÖĞÎ»£¬ËùÓĞ°´¼üËÉ¿ª
+                    // ä¸­ä½ï¼Œæ‰€æœ‰æŒ‰é”®æ¾å¼€
                     break;
             }
             switch(x4)
@@ -127,73 +128,69 @@ void ps2_parse_data(uint8_t *str)
 						
 						switch(x6)
             {
-                case KEY_Y:
+                case KEY_TRIANGLE:
                     ps2.right_key = 1;
                     break;
-                case KEY_A:
+                case KEY_CROSS:
                     ps2.right_key = 2;
                     break;
-								case KEY_X:
+								case KEY_SQUARE:
                     ps2.right_key = 3; 
                     break;
-                case KEY_B:
+                case KEY_CIRCLE:
                     ps2.right_key = 4;
                     break;
                 default:
                     ps2.right_key = 0;
                     break;
             }
-							switch(x7)
+            ps2.select = ((ps2.buttons & PS2_BUTTON_SELECT) != 0U) ? 1U : 0U;
+            ps2.top_key = 0U;
+            if ((ps2.buttons & PS2_BUTTON_L1) != 0U)
             {
-                case KEY_L1:
-                    ps2.top_key = 1;
-                    break;
-                case KEY_L2:
-                    ps2.top_key = 2;
-                    break;
-								case KEY_R1:
-                    ps2.top_key = 3; 
-                    break;
-                case KEY_R2:
-                    ps2.top_key = 4;
-                    break;
-								case KEY_SELECTION:
-									  ps2.select = 1;
-										break;
-                default:
-									  ps2.select = 0;
-                    ps2.top_key = 0;
-                    break;
+                ps2.top_key = 1U;
+            }
+            else if ((ps2.buttons & PS2_BUTTON_L2) != 0U)
+            {
+                ps2.top_key = 2U;
+            }
+            else if ((ps2.buttons & PS2_BUTTON_R1) != 0U)
+            {
+                ps2.top_key = 3U;
+            }
+            else if ((ps2.buttons & PS2_BUTTON_R2) != 0U)
+            {
+                ps2.top_key = 4U;
             }
         }
 				if (ps2.left_key != 0 || ps2.right_key != 0 || ps2.top_key != 0 || ps2.select != 0 || ps2.ly!= 0 || ps2.lx != 0) {
            data_flag = 1;
         } 
-			 // ========== ĞÂÔö£ºÈ«Áã¼ì²âÓë³¬Ê±±êÖ¾ ==========
+			 // ========== æ–°å¢ï¼šå…¨é›¶æ£€æµ‹ä¸è¶…æ—¶æ ‡å¿— ==========
         int is_all_zero = (ps2.lx == 0 && ps2.ly == 0 &&
                            ps2.left_key == 0 && ps2.right_key == 0 &&
-                           ps2.top_key == 0 && ps2.select == 0);
+                           ps2.buttons == 0U);
 
-        uint32_t now = HAL_GetTick();   // »ñÈ¡µ±Ç°ÏµÍ³ºÁÃëÊı
+        uint32_t now = HAL_GetTick();   // è·å–å½“å‰ç³»ç»Ÿæ¯«ç§’æ•°
 
         if (!is_all_zero) {
-            // ÓĞ·ÇÁã²Ù×÷£ºÇå³ıÍ£Ö¹±êÖ¾£¬²¢Ë¢ĞÂ×îºóÓĞĞ§Ê±¼ä
+            // æœ‰éé›¶æ“ä½œï¼šæ¸…é™¤åœæ­¢æ ‡å¿—ï¼Œå¹¶åˆ·æ–°æœ€åæœ‰æ•ˆæ—¶é—´
             remote_stopped_flag = 0;
             last_nonzero_tick = now;
         } else {
-            // µ±Ç°Êı¾İÈ«ÎªÁã£º¼ì²é¾àÀëÉÏ´Î·ÇÁãÊı¾İÊÇ·ñ³¬¹ı100ms
+            // å½“å‰æ•°æ®å…¨ä¸ºé›¶ï¼šæ£€æŸ¥è·ç¦»ä¸Šæ¬¡éé›¶æ•°æ®æ˜¯å¦è¶…è¿‡100ms
             if ((now - last_nonzero_tick) >= 100) {
                 remote_stopped_flag = 1;
             }
 					}
 				
 #if DEBUG_TEST == 5
-//	 printf("PARSE: Ö¡%02X | LX:%d LY:%d | ×ó¼ü:%d | ÓÒ¼ü:%d | ¶¥¼ü:%d |Ñ¡Ôñ£º%d\r\n",
+//	 printf("PARSE: å¸§%02X | LX:%d LY:%d | å·¦é”®:%d | å³é”®:%d | é¡¶é”®:%d |é€‰æ‹©ï¼š%d\r\n",
 //           ps2.frame_id, ps2.lx, ps2.ly,
 //           ps2.left_key, ps2.right_key, ps2.top_key,ps2.select);
 #endif
     }
-//´òÓ¡²âÊÔ
+//æ‰“å°æµ‹è¯•
 
 		
 }

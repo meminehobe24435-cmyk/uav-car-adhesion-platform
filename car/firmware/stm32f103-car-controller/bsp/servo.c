@@ -21,10 +21,10 @@
  */
 ServoConfig servo_config[SERVO_COUNT] =
 {
-  {1500U, 1400U, 1600U, 1}, /* SERVO_LF: J9  / PA0 / TIM5_CH1 */
-  {1500U, 1400U, 1600U, 1}, /* SERVO_RF: J11 / PA1 / TIM5_CH2 */
-  {1500U, 1400U, 1600U, 1}, /* SERVO_LR: J12 / PC5 / software PWM */
-  {1500U, 1400U, 1600U, 1}  /* SERVO_RR: J14 / PB0 / software PWM */
+  {1500U, 1300U, 1700U, 1}, /* SERVO_LF: J9  / PA0 / TIM5_CH1 */
+  {1500U, 1300U, 1700U, 1}, /* SERVO_RF: J11 / PA1 / TIM5_CH2 */
+  {1500U, 1300U, 1700U, 1}, /* SERVO_LR: J12 / PC5 / software PWM */
+  {1500U, 1300U, 1700U, 1}  /* SERVO_RR: J14 / PB0 / software PWM */
 };
 
 static volatile uint16_t servo_pending_us[SERVO_COUNT] =

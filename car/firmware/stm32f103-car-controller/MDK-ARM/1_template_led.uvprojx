@@ -907,6 +907,11 @@
               <FilePath>..\bsp\steering.c</FilePath>
             </File>
             <File>
+              <FileName>car.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\bsp\car.c</FilePath>
+            </File>
+            <File>
               <FileName>bsp_key.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\bsp\bsp_key.c</FilePath>
@@ -940,6 +945,16 @@
               <FileName>remote_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\app\remote_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>rc_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\rc_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>flight_comm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\flight_comm.c</FilePath>
             </File>
             <File>
               <FileName>app_key.c</FileName>
