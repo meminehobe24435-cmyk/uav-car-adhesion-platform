@@ -3,48 +3,54 @@
 
 #include "stdint.h"
 #define RX_BUF_SIZE 128
-#define KEY_MID       0x0F    // ÖĞÎ»
-#define KEY_UP        0x00    // ·½ÏòÉÏ (ÉÏÏÂ(×óÒ¡¸ËÉÏÏÂ)x5)
-#define KEY_DOWN      0xFF    // ·½ÏòÏÂ 
+#define KEY_MID       0x0F    // ä¸­ä½
+#define KEY_UP        0x00    // æ–¹å‘ä¸Š (ä¸Šä¸‹(å·¦æ‘‡æ†ä¸Šä¸‹)x5)
+#define KEY_DOWN      0xFF    // æ–¹å‘ä¸‹
 
-#define KEY_LEFT      0x00    // ·½Ïò×ó (×óÓÒ(×óÒ¡¸Ë×óÓÒ)x4)
-#define KEY_RIGHT     0xFF    // ·½ÏòÓÒ 
+#define KEY_LEFT      0x00    // æ–¹å‘å·¦ (å·¦å³(å·¦æ‘‡æ†å·¦å³)x4)
+#define KEY_RIGHT     0xFF    // æ–¹å‘å³
 
-#define KEY_Y         0x1F     // Y¼ü  (Êı×Ö¼üºÍÓÒÒ¡¸Ë¶¼ÊÇx6)
-#define KEY_A					0x4F     // A¼ü
-#define KEY_X         0x8F     // X¼ü
-#define KEY_B					0x2F     // B¼ü
-// ¼ç²¿°´¼ü (x7 ×Ö½Ú)
-#define KEY_L1        0x01    // L1
-#define KEY_L2        0x04    // L2
-#define KEY_R1        0x02    // R1
-#define KEY_R2        0x08		// R2
-#define KEY_SELECTION 0x10
+/* Byte5 face-button values confirmed with VID_0810/PID_0001. */
+#define KEY_TRIANGLE  0x1F
+#define KEY_CROSS     0x4F
+#define KEY_SQUARE    0x8F
+#define KEY_CIRCLE    0x2F
 
-//Ò£¿ØÆ÷Êı¾İ½á¹¹Ìå
+/* Byte6 is a bit mask; simultaneous buttons must not use equality tests. */
+#define PS2_BUTTON_L1      0x01U
+#define PS2_BUTTON_R1      0x02U
+#define PS2_BUTTON_L2      0x04U
+#define PS2_BUTTON_R2      0x08U
+#define PS2_BUTTON_SELECT  0x10U
+#define PS2_BUTTON_START   0x20U
+#define PS2_BUTTON_L3      0x40U
+#define PS2_BUTTON_R3      0x80U
+
+//é¥æ§å™¨æ•°æ®ç»“æ„ä½“
 typedef struct
 {
-    uint8_t frame_id;      // Ö¡ºÅ 0x01(ÓĞĞ§)/0x02
-    int16_t lx;            // ×óÒ¡¸ËX  ÖĞÎ»0x80
-    int16_t ly;            // ×óÒ¡¸ËY  ÖĞÎ»0x80
+    uint8_t frame_id;      // å¸§å· 0x01(æœ‰æ•ˆ)/0x02
+    int16_t lx;            // å·¦æ‘‡æ†X  ä¸­ä½0x80
+    int16_t ly;            // å·¦æ‘‡æ†Y  ä¸­ä½0x80
     
-		//×ó±ß¹¦ÄÜ¼ü
-		uint8_t left_key;  //0:²»°´ÏÂ  1:ÉÏ   2:ÏÂ   3:×ó   4:ÓÒ
-    // ÓÒ±ß¹¦ÄÜ¼ü
-	  uint8_t right_key; //0:²»°´ÏÂ  1:ÉÏ   2:ÏÂ   3:×ó   4:ÓÒ
+		//å·¦è¾¹åŠŸèƒ½é”®
+		uint8_t left_key;  //0:ä¸æŒ‰ä¸‹  1:ä¸Š   2:ä¸‹   3:å·¦   4:å³
+    // å³è¾¹åŠŸèƒ½é”®
+	  uint8_t right_key; //0:ä¸æŒ‰ä¸‹  1:ä¸Š   2:ä¸‹   3:å·¦   4:å³
         
-    // ¼ç²¿°´¼ü
-	  uint8_t top_key;   //0:²»°´ÏÂ  1:×ó1  2:×ó2  3:ÓÒ1  4:ÓÒ2
-    // ¹¦ÄÜ¼ü
-    uint8_t select  :1; // SELECT¼ü
+    // è‚©éƒ¨æŒ‰é”®
+	  uint8_t top_key;   //0:ä¸æŒ‰ä¸‹  1:å·¦1  2:å·¦2  3:å³1  4:å³2
+    uint8_t buttons;   // Byte6 raw bit mask: L1/R1/L2/R2/SELECT/START/L3/R3
+    // åŠŸèƒ½é”®
+    uint8_t select  :1; // SELECTé”®
   
 } PS2_HandleTypeDef;
 
-extern uint8_t uart5_rx_finish;  // ½ÓÊÕÍê³É±êÖ¾
+extern volatile uint8_t uart5_rx_finish;  // æ¥æ”¶å®Œæˆæ ‡å¿—
 extern uint8_t uart5_rx_buf[RX_BUF_SIZE];
-extern PS2_HandleTypeDef ps2;  //Êı¾İ´æ´¢½á¹¹Ìå
+extern PS2_HandleTypeDef ps2;  //æ•°æ®å­˜å‚¨ç»“æ„ä½“
 extern uint8_t data_flag;
-extern uint8_t remote_stopped_flag ;          // Í£Ö¹±êÖ¾£¨1=Ò£¿ØÆ÷ÎŞÓĞĞ§ÊäÈë³¬¹ı100ms£©
+extern uint8_t remote_stopped_flag ;          // åœæ­¢æ ‡å¿—ï¼ˆ1=é¥æ§å™¨æ— æœ‰æ•ˆè¾“å…¥è¶…è¿‡100msï¼‰
 
 void uasrt_rx_init(void);
 void ps2_parse_data(uint8_t *str);

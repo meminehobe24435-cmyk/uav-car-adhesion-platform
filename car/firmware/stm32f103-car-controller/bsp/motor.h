@@ -47,10 +47,6 @@ uint16_t motor_percent_to_pwm(uint16_t percent);
 void motor_single_test(void);
 void motor_four_test(void);
 
-void car_stop(void);
-void car_forward(uint16_t pwm);
-void car_backward(uint16_t pwm);
-
 /* Compatibility entry point retained for the existing, inactive chassis code. */
 void motor_ctrol(Chassis_TypeDef *chassis);
 

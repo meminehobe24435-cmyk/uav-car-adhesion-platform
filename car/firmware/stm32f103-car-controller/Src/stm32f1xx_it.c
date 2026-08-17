@@ -24,7 +24,6 @@
 #include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ros_comm_task.h"
 #include "servo.h"
 /* USER CODE END Includes */
 
@@ -242,7 +241,7 @@ void UART4_IRQHandler(void)
   /* USER CODE END UART4_IRQn 0 */
   HAL_UART_IRQHandler(&huart4);
   /* USER CODE BEGIN UART4_IRQn 1 */
-	ros_comm_recv_idle_cb();
+
   /* USER CODE END UART4_IRQn 1 */
 }
 
